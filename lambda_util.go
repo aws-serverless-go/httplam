@@ -1,4 +1,4 @@
-package basic
+package httplam
 
 import (
 	"net/http"

@@ -1,4 +1,4 @@
-package basic
+package httplam
 
 const (
 	MIMEApplicationJSON            = "application/json"

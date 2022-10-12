@@ -1,4 +1,4 @@
-module github.com/aws-serverless-go/basic
+module github.com/aws-serverless-go/httplam
 
 go 1.18
 
