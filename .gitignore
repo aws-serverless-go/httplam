@@ -1,0 +1,7 @@
+.vscode
+.DS_Store
+.idea
+main
+function.zip
+config.json
+build/
