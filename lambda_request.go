@@ -57,7 +57,12 @@ func NewHTTPRequest(ctx context.Context, from *events.APIGatewayV2HTTPRequest) (
 		rawURL.WriteString(from.RawQueryString)
 	}
 
-	req, err = http.NewRequestWithContext(ctx, from.RequestContext.HTTP.Method, rawURL.String(), bytes.NewReader(body))
+	req, err = http.NewRequestWithContext(
+		setLambdaRequest(ctx, from),
+		from.RequestContext.HTTP.Method,
+		rawURL.String(),
+		bytes.NewReader(body),
+	)
 	if err != nil {
 		return
 	}
