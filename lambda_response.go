@@ -11,11 +11,17 @@ import (
 	"net/http"
 )
 
-func NewAPIGatewayV2HTTPResponseBuilder(target *events.APIGatewayV2HTTPResponse) *APIGatewayV2HTTPResponseBuilder {
-	return &APIGatewayV2HTTPResponseBuilder{
+func NewAPIGatewayV2HTTPResponseBuilder(target *events.APIGatewayV2HTTPResponse) (res *APIGatewayV2HTTPResponseBuilder) {
+	res = &APIGatewayV2HTTPResponseBuilder{
 		header:      make(http.Header),
 		buildTarget: target,
 	}
+
+	if res.buildTarget == nil {
+		res.buildTarget = new(events.APIGatewayV2HTTPResponse)
+	}
+
+	return
 }
 
 var (
@@ -59,35 +65,37 @@ func (w *APIGatewayV2HTTPResponseBuilder) setCookies(v ...string) {
 	w.buildTarget.Cookies = append(w.buildTarget.Cookies, v...)
 }
 
-func (w *APIGatewayV2HTTPResponseBuilder) Build() error {
+func (w *APIGatewayV2HTTPResponseBuilder) Build() (*events.APIGatewayV2HTTPResponse, error) {
 	return w.build()
 }
 
-func (w *APIGatewayV2HTTPResponseBuilder) build() error {
+func (w *APIGatewayV2HTTPResponseBuilder) build() (res *events.APIGatewayV2HTTPResponse, err error) {
+	res = w.buildTarget
 	if w.done {
-		return nil
+		return
 	}
 
-	if w.buildTarget.StatusCode == 0 {
-		w.buildTarget.StatusCode = http.StatusOK
+	if res.StatusCode == 0 {
+		res.StatusCode = http.StatusOK
 	}
 
 	body, err := ioutil.ReadAll(&w.buffer)
 	if err != nil {
-		return err
+		res = nil
+		return
 	}
 
 	if len(body) > 0 {
 		if isStringContentTypeFromHeader(w.header) {
-			w.buildTarget.Body = string(body)
+			res.Body = string(body)
 		} else {
-			w.buildTarget.IsBase64Encoded = true
-			w.buildTarget.Body = base64.StdEncoding.EncodeToString(body)
+			res.IsBase64Encoded = true
+			res.Body = base64.StdEncoding.EncodeToString(body)
 		}
 	}
 
-	w.buildTarget.Headers = make(map[string]string)
-	w.buildTarget.MultiValueHeaders = make(map[string][]string)
+	res.Headers = make(map[string]string)
+	res.MultiValueHeaders = make(map[string][]string)
 
 	for k, v := range w.header {
 		// known-headers
@@ -98,14 +106,14 @@ func (w *APIGatewayV2HTTPResponseBuilder) build() error {
 		}
 
 		if len(v) == 1 {
-			w.buildTarget.Headers[k] = v[0]
+			res.Headers[k] = v[0]
 		} else {
-			w.buildTarget.MultiValueHeaders[k] = v
+			res.MultiValueHeaders[k] = v
 		}
 	}
 
 	w.done = true
-	return nil
+	return
 }
 
 func (w *APIGatewayV2HTTPResponseBuilder) IsDone() bool {
