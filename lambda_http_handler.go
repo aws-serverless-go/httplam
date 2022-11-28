@@ -30,7 +30,7 @@ func (h *defaultHandler) Invoke(ctx context.Context, payload []byte) ([]byte, er
 	rw := NewAPIGatewayV2HTTPResponseBuilder(&response)
 
 	h.handler.ServeHTTP(rw, req)
-	err = rw.Build()
+	_, err = rw.Build()
 	if err != nil {
 		return nil, err
 	}
